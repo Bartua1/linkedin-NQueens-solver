@@ -1,1 +1,1 @@
-# linkedin-NQueens-solver
+# NQueens Linkedin Solver
