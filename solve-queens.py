@@ -18,6 +18,8 @@ options = ChromeOptions()
 options.add_argument("--start-maximized")
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 
+first_time = False # Set to True if it is the first time you play the game
+
 driver = webdriver.Chrome(PATH, options=options)
 
 def queensToNumpy(queens):
@@ -61,18 +63,22 @@ if __name__ == "__main__":
     sign_in_btn = driver.find_element(By.CSS_SELECTOR, "button[data-litms-control-urn='login-submit']")
     sign_in_btn.click()
     
-    WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.launch-footer__btn--start")))
-    start_btn = driver.find_element(By.CSS_SELECTOR, "button.launch-footer__btn--start")
-    start_btn.click()
-    time.sleep(0.5)
+
     try:
-        # the skip is artdeco-modal__dismiss
-        skip_btn = driver.find_element(By.CSS_SELECTOR, "button.artdeco-modal__dismiss")
-        skip_btn.click()
+        start_btn = driver.find_element(By.CSS_SELECTOR, "button.launch-footer__btn--start")
+        start_btn.click()
     except:
         pass
 
+    if (first_time):
+        try:
+            # the skip is artdeco-modal__dismiss
+            skip_btn = driver.find_element(By.CSS_SELECTOR, "button.artdeco-modal__dismiss")
+            skip_btn.click()
+        except:
+            pass
 
+    time.sleep(1)
     queens_grid = driver.find_element(By.ID, "queens-grid")
     soup = BeautifulSoup(queens_grid.get_attribute("outerHTML"), "html.parser")
 
@@ -80,11 +86,17 @@ if __name__ == "__main__":
 
     board = queensToNumpy(soup)
 
-    solver = backtracking_solver(board)
+    solver = backtracking_solver(board, board.shape)
     sol = solver.solve()
 
+    print("Board:\n", board)
+    print("Solucion:\n", sol)
+
     # Obtaining the queens positions and transforming them to the format requested by the game
-    queens = [ queen[0] * 9 + queen[1] for queen in np.argwhere(sol == 1)]
+    indexes = np.argwhere(sol == 1)
+    print("Indices de reinas:\n", indexes)
+    queens = [ queen[0] * board.shape[0] + queen[1] for queen in indexes]
+    print("Queens Indexes:\n", queens)
 
     driver = webdriver.Chrome(PATH, options=options)
     driver.get("https://www.linkedin.com/games/queens/")
@@ -104,23 +116,26 @@ if __name__ == "__main__":
     start_btn = driver.find_element(By.CSS_SELECTOR, "button.launch-footer__btn--start")
     start_btn.click()
     time.sleep(0.5)
-    try:
-        # the skip is artdeco-modal__dismiss
-        skip_btn = driver.find_element(By.CSS_SELECTOR, "button.artdeco-modal__dismiss")
-        skip_btn.click()
-    except:
-        pass
 
-    time.sleep(0.7)
+    if (first_time):
+        try:
+            # the skip is artdeco-modal__dismiss
+            skip_btn = driver.find_element(By.CSS_SELECTOR, "button.artdeco-modal__dismiss")
+            skip_btn.click()
+            time.sleep(0.8)
+        except:
+            pass
 
     # Now we play the game
     for queen in queens:
-        option = driver.find_element(By.CSS_SELECTOR, f"div[data-cell-idx='{queen}']")
-        AC(driver).double_click(option).perform()
+        queen_pos = driver.find_element(By.CSS_SELECTOR, f"div[data-cell-idx='{queen}']")
+        queen_pos.click()
+        time.sleep(0.1)
+        queen_pos.click()
+        time.sleep(0.1)
+        
 
     time.sleep(10)
     driver.quit()
 
     print(board)
-
-

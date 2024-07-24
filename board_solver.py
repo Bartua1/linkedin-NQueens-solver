@@ -4,7 +4,8 @@ class backtracking_solver:
     def __init__(self, board, shape):
         self.board = board
         self.solution = np.zeros(shape)
-    
+        self.X = shape[0] - 1
+
     def solve(self):
         if self.place_queen(0):
             return self.solution
@@ -36,11 +37,11 @@ class backtracking_solver:
         # Check for queens adjacent diagonally
         if row > 0 and col > 0 and self.solution[row - 1, col - 1] == 1:
             return False
-        if row > 0 and col < 8 and self.solution[row - 1, col + 1] == 1:
+        if row > 0 and col < self.X and self.solution[row - 1, col + 1] == 1:
             return False
-        if row < 8 and col > 0 and self.solution[row + 1, col - 1] == 1:
+        if row < self.X and col > 0 and self.solution[row + 1, col - 1] == 1:
             return False
-        if row < 8 and col < 8 and self.solution[row + 1, col + 1] == 1:
+        if row < self.X and col < self.X and self.solution[row + 1, col + 1] == 1:
             return False
         
         return self.is_color_valid(row, col)
